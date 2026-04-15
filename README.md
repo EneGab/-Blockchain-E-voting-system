@@ -1,2 +1,2 @@
 # -Blockchain-E-voting-system
-xczZVn.An e-voting system   Vb
+ an e-voting system that uses blockchain hash for tamper proof voting verirification
