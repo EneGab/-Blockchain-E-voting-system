@@ -1,0 +1,18 @@
+# Dependencies
+node_modules/
+evoting-frontend/frontend/node_modules/
+evoting-backend/backend/node_modules/
+
+# Next.js build
+.next/
+evoting-frontend/frontend/.next/
+
+# Database
+evoting-backend/backend/db/evoting.db
+
+# Environment variables
+evoting-frontend/frontend/.env.local
+evoting-backend/backend/.env
+
+# Misc
+.DS_Store
