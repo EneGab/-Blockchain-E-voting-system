@@ -6,10 +6,13 @@ const { adminAuth } = require('../middleware/authMiddleware');
 
 const router = express.Router();
 
+const DEFAULT_PASSWORD = 'admin123';
+
 // POST /api/admin/login
 router.post('/login', async (req, res) => {
   const { username, password } = req.body;
-  if (!username || !password) return res.status(400).json({ message: 'Username and password are required.' });
+  if (!username || !password)
+    return res.status(400).json({ message: 'Username and password are required.' });
 
   try {
     const admin = await db('admins').where('username', username.trim()).first();
@@ -23,9 +26,36 @@ router.post('/login', async (req, res) => {
       process.env.JWT_SECRET,
       { expiresIn: '4h' }
     );
-    return res.json({ message: 'Admin login successful.', token });
+
+    // Check if still using default password
+    const isDefault = bcrypt.compareSync(DEFAULT_PASSWORD, admin.password_hash);
+
+    return res.json({
+      message: 'Admin login successful.',
+      token,
+      requiresPasswordChange: isDefault,
+    });
   } catch (err) {
+    console.error('Admin login error:', err);
     return res.status(500).json({ message: 'Login failed.' });
+  }
+});
+
+// POST /api/admin/set-password
+router.post('/set-password', adminAuth, async (req, res) => {
+  const { password } = req.body;
+  if (!password) return res.status(400).json({ message: 'Password is required.' });
+  if (password.length < 8) return res.status(400).json({ message: 'Password must be at least 8 characters.' });
+  if (!/[A-Z]/.test(password)) return res.status(400).json({ message: 'Must contain at least one uppercase letter.' });
+  if (!/[0-9]/.test(password)) return res.status(400).json({ message: 'Must contain at least one number.' });
+
+  try {
+    const hash = bcrypt.hashSync(password, 12);
+    await db('admins').where('id', req.admin.id).update({ password_hash: hash });
+    return res.json({ message: 'Password updated successfully.' });
+  } catch (err) {
+    console.error('Set password error:', err);
+    return res.status(500).json({ message: 'Failed to update password.' });
   }
 });
 
