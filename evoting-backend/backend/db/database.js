@@ -9,22 +9,38 @@ const db = knex({
 });
 
 async function initDB() {
-  // Voters
+
+  // ── Voters table ───────────────────────────────────────────────────────────
   const hasVoters = await db.schema.hasTable('voters');
   if (!hasVoters) {
+    // Create fresh voters table with all columns including nin and date_of_birth
     await db.schema.createTable('voters', t => {
       t.increments('id').primary();
       t.string('unique_id').notNullable().unique();
       t.string('full_name').notNullable();
       t.string('email').notNullable().unique();
+      t.string('nin').notNullable().unique();        // National ID — unique per voter
+      t.string('date_of_birth').notNullable();       // For age verification
       t.string('password_hash').notNullable();
       t.integer('has_voted').notNullable().defaultTo(0);
       t.timestamp('created_at').defaultTo(db.fn.now());
     });
     console.log('✅ voters table created');
+  } else {
+    // If table already exists, add missing columns without breaking existing data
+    const hasNIN = await db.schema.hasColumn('voters', 'nin');
+    if (!hasNIN) {
+      await db.schema.table('voters', t => { t.string('nin').defaultTo(''); });
+      console.log('✅ Added nin column');
+    }
+    const hasDOB = await db.schema.hasColumn('voters', 'date_of_birth');
+    if (!hasDOB) {
+      await db.schema.table('voters', t => { t.string('date_of_birth').defaultTo(''); });
+      console.log('✅ Added date_of_birth column');
+    }
   }
 
-  // Candidates — add new columns if missing
+  // ── Candidates table ───────────────────────────────────────────────────────
   const hasCandidates = await db.schema.hasTable('candidates');
   if (!hasCandidates) {
     await db.schema.createTable('candidates', t => {
@@ -39,7 +55,6 @@ async function initDB() {
     });
     console.log('✅ candidates table created');
   } else {
-    // Add missing columns to existing table
     const hasPosition = await db.schema.hasColumn('candidates', 'position');
     if (!hasPosition) await db.schema.table('candidates', t => { t.string('position'); });
     const hasBio = await db.schema.hasColumn('candidates', 'bio');
@@ -48,7 +63,7 @@ async function initDB() {
     if (!hasPhoto) await db.schema.table('candidates', t => { t.string('photo'); });
   }
 
-  // Votes
+  // ── Votes table ────────────────────────────────────────────────────────────
   const hasVotes = await db.schema.hasTable('votes');
   if (!hasVotes) {
     await db.schema.createTable('votes', t => {
@@ -62,7 +77,7 @@ async function initDB() {
     console.log('✅ votes table created');
   }
 
-  // Admins
+  // ── Admins table ───────────────────────────────────────────────────────────
   const hasAdmins = await db.schema.hasTable('admins');
   if (!hasAdmins) {
     await db.schema.createTable('admins', t => {
@@ -74,7 +89,7 @@ async function initDB() {
     console.log('✅ admins table created');
   }
 
-  // Password resets
+  // ── Password resets table ──────────────────────────────────────────────────
   const hasResets = await db.schema.hasTable('password_resets');
   if (!hasResets) {
     await db.schema.createTable('password_resets', t => {
@@ -87,15 +102,19 @@ async function initDB() {
     console.log('✅ password_resets table created');
   }
 
-  // Seed admin
-  const adminExists = await db('admins').where('username', process.env.ADMIN_USERNAME || 'admin').first();
+  // ── Seed default admin account ─────────────────────────────────────────────
+  const adminExists = await db('admins')
+    .where('username', process.env.ADMIN_USERNAME || 'admin').first();
   if (!adminExists) {
     const hash = bcrypt.hashSync(process.env.ADMIN_PASSWORD || 'admin123', 10);
-    await db('admins').insert({ username: process.env.ADMIN_USERNAME || 'admin', password_hash: hash });
+    await db('admins').insert({
+      username:      process.env.ADMIN_USERNAME || 'admin',
+      password_hash: hash,
+    });
     console.log('✅ Admin account seeded');
   }
 
-  // Seed candidates only if empty
+  // ── Seed sample candidates if table is empty ───────────────────────────────
   const count = await db('candidates').count('id as c').first();
   if (count.c === 0) {
     await db('candidates').insert([

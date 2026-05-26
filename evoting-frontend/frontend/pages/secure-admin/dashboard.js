@@ -18,12 +18,11 @@ export default function AdminDashboard() {
   const [loading,    setLoading]    = useState(true);
   const [toast,      setToast]      = useState(null);
 
-  // Candidate form state
-  const [showForm,   setShowForm]   = useState(false);
-  const [editId,     setEditId]     = useState(null);
-  const [cForm,      setCForm]      = useState({ name: '', party: '', position: '', bio: '', photo: '' });
-  const [saving,     setSaving]     = useState(false);
-  const [deleteId,   setDeleteId]   = useState(null);
+  const [showForm, setShowForm] = useState(false);
+  const [editId,   setEditId]   = useState(null);
+  const [cForm,    setCForm]    = useState({ name: '', party: '', position: '', bio: '', photo: '' });
+  const [saving,   setSaving]   = useState(false);
+  const [deleteId, setDeleteId] = useState(null);
 
   useEffect(() => {
     const token = localStorage.getItem('adminToken');
@@ -39,9 +38,9 @@ export default function AdminDashboard() {
         axios.get(`${API}/api/admin/voters`,     { headers: authHeaders() }),
         axios.get(`${API}/api/admin/candidates`, { headers: authHeaders() }),
       ]);
-      setResults(r.data.candidates  || []);
+      setResults(r.data.candidates    || []);
       setStats({ total_votes: r.data.total_votes || 0, total_voters: r.data.total_voters || 0 });
-      setVoters(v.data.voters       || []);
+      setVoters(v.data.voters         || []);
       setCandidates(c.data.candidates || []);
     } catch (err) {
       if (err.response?.status === 401) router.push('/secure-admin');
@@ -108,10 +107,10 @@ export default function AdminDashboard() {
   const sorted   = [...results].sort((a, b) => b.vote_count - a.vote_count);
 
   const tabs = [
-    { id: 'overview',    label: '📊 Overview'    },
-    { id: 'candidates',  label: '👤 Candidates'  },
-    { id: 'results',     label: '🏆 Results'     },
-    { id: 'voters',      label: '👥 Voters'      },
+    { id: 'overview',   label: '📊 Overview'  },
+    { id: 'candidates', label: '👤 Candidates' },
+    { id: 'results',    label: '🏆 Results'    },
+    { id: 'voters',     label: '👥 Voters'     },
   ];
 
   if (loading) return (
@@ -122,14 +121,15 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Toast */}
+
+      {/* Toast notification */}
       {toast && (
         <div className={`toast toast-${toast.type}`}>
           {toast.type === 'success' ? '✅' : '❌'} {toast.message}
         </div>
       )}
 
-      {/* Navbar */}
+      {/* Top navbar */}
       <nav className="bg-gray-900 text-white px-4 py-3 no-print">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -152,7 +152,7 @@ export default function AdminDashboard() {
       <div className="max-w-6xl mx-auto px-4 py-8">
         <h1 className="text-2xl font-bold text-gray-900 mb-6">Admin Dashboard</h1>
 
-        {/* Tabs */}
+        {/* Tab buttons */}
         <div className="flex gap-2 mb-8 flex-wrap">
           {tabs.map(t => (
             <button key={t.id} onClick={() => setTab(t.id)}
@@ -166,14 +166,14 @@ export default function AdminDashboard() {
           ))}
         </div>
 
-        {/* ── OVERVIEW ── */}
+        {/* ── OVERVIEW TAB ── */}
         {tab === 'overview' && (
           <div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-8">
               {[
-                { label: 'Total Votes Cast',  value: stats.total_votes,  icon: '🗳️', color: 'text-green-600'  },
-                { label: 'Registered Voters', value: stats.total_voters, icon: '👥', color: 'text-gray-700'   },
-                { label: 'Voter Turnout',     value: `${turnout}%`,      icon: '📊', color: 'text-green-600'  },
+                { label: 'Total Votes Cast',  value: stats.total_votes,  icon: '🗳️', color: 'text-green-600' },
+                { label: 'Registered Voters', value: stats.total_voters, icon: '👥', color: 'text-gray-700'  },
+                { label: 'Voter Turnout',     value: `${turnout}%`,      icon: '📊', color: 'text-green-600' },
               ].map(s => (
                 <div key={s.label} className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 text-center">
                   <div className="text-3xl mb-2">{s.icon}</div>
@@ -183,18 +183,17 @@ export default function AdminDashboard() {
               ))}
             </div>
 
-            {/* Live vote chart */}
             <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
               <h2 className="font-bold text-gray-900 mb-4">Live Vote Distribution</h2>
               <div className="space-y-4">
                 {sorted.map((c, i) => {
-                  const pct = stats.total_votes ? Math.round((c.vote_count / stats.total_votes) * 100) : 0;
+                  const pct  = stats.total_votes ? Math.round((c.vote_count / stats.total_votes) * 100) : 0;
                   const barW = Math.round((c.vote_count / maxVotes) * 100);
                   return (
                     <div key={c.id}>
                       <div className="flex justify-between items-center mb-1">
                         <div className="flex items-center gap-2">
-                          <span className="text-xs font-bold text-gray-400">#{i+1}</span>
+                          <span className="text-xs font-bold text-gray-400">#{i + 1}</span>
                           <span className="text-sm font-semibold text-gray-800">{c.name}</span>
                           {i === 0 && stats.total_votes > 0 && (
                             <span className="badge-success">LEADING</span>
@@ -217,7 +216,7 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        {/* ── CANDIDATES ── */}
+        {/* ── CANDIDATES TAB ── */}
         {tab === 'candidates' && (
           <div>
             <div className="flex justify-between items-center mb-6">
@@ -263,7 +262,7 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        {/* ── RESULTS ── */}
+        {/* ── RESULTS TAB ── */}
         {tab === 'results' && (
           <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
@@ -316,7 +315,7 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        {/* ── VOTERS ── */}
+        {/* ── VOTERS TAB ── */}
         {tab === 'voters' && (
           <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-100">
@@ -329,6 +328,8 @@ export default function AdminDashboard() {
                     <th className="px-6 py-3 text-left">Voter ID</th>
                     <th className="px-6 py-3 text-left">Full Name</th>
                     <th className="px-6 py-3 text-left">Email</th>
+                    <th className="px-6 py-3 text-left">NIN</th>
+                    <th className="px-6 py-3 text-left">Date of Birth</th>
                     <th className="px-6 py-3 text-left">Status</th>
                     <th className="px-6 py-3 text-left">Registered</th>
                   </tr>
@@ -339,15 +340,26 @@ export default function AdminDashboard() {
                       <td className="px-6 py-4 font-mono font-bold text-green-700 text-xs">{v.unique_id}</td>
                       <td className="px-6 py-4 font-semibold text-gray-800">{v.full_name}</td>
                       <td className="px-6 py-4 text-gray-500">{v.email}</td>
+                      <td className="px-6 py-4 font-mono text-gray-600 text-xs">{v.nin || '—'}</td>
+                      <td className="px-6 py-4 text-gray-500 text-xs">{v.date_of_birth || '—'}</td>
                       <td className="px-6 py-4">
                         {v.has_voted
                           ? <span className="badge-success">Voted</span>
                           : <span className="badge-warning">Not Voted</span>
                         }
                       </td>
-                      <td className="px-6 py-4 text-gray-400 text-xs">{new Date(v.created_at).toLocaleDateString()}</td>
+                      <td className="px-6 py-4 text-gray-400 text-xs">
+                        {new Date(v.created_at).toLocaleDateString()}
+                      </td>
                     </tr>
                   ))}
+                  {voters.length === 0 && (
+                    <tr>
+                      <td colSpan={7} className="px-6 py-12 text-center text-gray-400">
+                        No voters registered yet.
+                      </td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
             </div>
@@ -355,11 +367,13 @@ export default function AdminDashboard() {
         )}
       </div>
 
-      {/* Add/Edit Candidate Modal */}
+      {/* ── Add/Edit Candidate Modal ── */}
       {showForm && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md max-h-[90vh] overflow-y-auto">
-            <h2 className="text-lg font-bold text-gray-900 mb-6">{editId ? 'Edit Candidate' : 'Add New Candidate'}</h2>
+            <h2 className="text-lg font-bold text-gray-900 mb-6">
+              {editId ? 'Edit Candidate' : 'Add New Candidate'}
+            </h2>
             <div className="space-y-4">
               <div>
                 <label className="form-label">Full Name *</label>
@@ -397,20 +411,25 @@ export default function AdminDashboard() {
         </div>
       )}
 
-      {/* Delete Confirmation Modal */}
+      {/* ── Delete Confirmation Modal ── */}
       {deleteId && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-sm text-center">
             <div className="text-4xl mb-3">⚠️</div>
             <h2 className="text-lg font-bold text-gray-900 mb-2">Delete Candidate?</h2>
-            <p className="text-gray-500 text-sm mb-6">This action cannot be undone. All votes for this candidate will remain in the database.</p>
+            <p className="text-gray-500 text-sm mb-6">This action cannot be undone.</p>
             <div className="flex gap-3">
-              <button className="btn-danger flex-1" onClick={() => deleteCandidate(deleteId)}>Yes, Delete</button>
-              <button className="btn-secondary flex-1" onClick={() => setDeleteId(null)}>Cancel</button>
+              <button className="btn-danger flex-1" onClick={() => deleteCandidate(deleteId)}>
+                Yes, Delete
+              </button>
+              <button className="btn-secondary flex-1" onClick={() => setDeleteId(null)}>
+                Cancel
+              </button>
             </div>
           </div>
         </div>
       )}
+
     </div>
   );
 }
