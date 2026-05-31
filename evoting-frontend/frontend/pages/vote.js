@@ -89,7 +89,7 @@ export default function VotePage() {
       <div className="max-w-6xl mx-auto px-4 py-10">
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-gray-900 mb-1">Cast Your Vote</h1>
-          <p className="text-gray-500 text-sm">Select one candidate. You can only vote once — choose carefully.</p>
+          <p className="text-gray-500 text-sm">Select one candidate. You can only vote once, <strong>choose carefully!</strong></p>
         </div>
 
         {/* Already voted warning */}

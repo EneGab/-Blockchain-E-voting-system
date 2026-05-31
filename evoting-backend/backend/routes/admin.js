@@ -3,6 +3,7 @@ const bcrypt  = require('bcryptjs');
 const jwt     = require('jsonwebtoken');
 const { db }  = require('../db/database');
 const { adminAuth } = require('../middleware/authMiddleware');
+const upload = require('../middleware/upload');
 
 const router = express.Router();
 
@@ -74,7 +75,7 @@ router.get('/results', adminAuth, async (req, res) => {
 // GET /api/admin/voters
 router.get('/voters', adminAuth, async (req, res) => {
   try {
-    const voters = await db('voters').select('id', 'unique_id', 'full_name', 'email', 'has_voted', 'created_at').orderBy('created_at', 'desc');
+    const voters = await db('voters').select('id', 'unique_id', 'full_name', 'email', 'nin', 'date_of_birth', 'has_voted', 'created_at').orderBy('created_at', 'desc');
     return res.json({ voters });
   } catch (err) {
     return res.status(500).json({ message: 'Failed to fetch voters.' });
@@ -92,9 +93,13 @@ router.get('/candidates', adminAuth, async (req, res) => {
 });
 
 // POST /api/admin/candidates
-router.post('/candidates', adminAuth, async (req, res) => {
-  const { name, party, position, bio, photo } = req.body;
+router.post('/candidates', adminAuth, upload.single('photo'), async (req, res) => {
+  const { name, party, position, bio } = req.body;
   if (!name) return res.status(400).json({ message: 'Candidate name is required.' });
+
+  // If a file was uploaded, build its public path; otherwise leave photo empty
+  const photo = req.file ? `/uploads/${req.file.filename}` : null;
+
   try {
     await db('candidates').insert({ name: name.trim(), party, position, bio, photo });
     return res.status(201).json({ message: 'Candidate added successfully.' });
@@ -104,11 +109,20 @@ router.post('/candidates', adminAuth, async (req, res) => {
 });
 
 // PUT /api/admin/candidates/:id
-router.put('/candidates/:id', adminAuth, async (req, res) => {
-  const { name, party, position, bio, photo } = req.body;
+router.put('/candidates/:id', adminAuth, upload.single('photo'), async (req, res) => {
+  const { name, party, position, bio } = req.body;
   if (!name) return res.status(400).json({ message: 'Candidate name is required.' });
+
   try {
-    await db('candidates').where('id', req.params.id).update({ name: name.trim(), party, position, bio, photo });
+    // Build the fields to update
+    const updateData = { name: name.trim(), party, position, bio };
+
+    // Only update the photo if a new one was uploaded
+    if (req.file) {
+      updateData.photo = `/uploads/${req.file.filename}`;
+    }
+
+    await db('candidates').where('id', req.params.id).update(updateData);
     return res.json({ message: 'Candidate updated successfully.' });
   } catch (err) {
     return res.status(500).json({ message: 'Failed to update candidate.' });

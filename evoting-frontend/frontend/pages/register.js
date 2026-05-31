@@ -86,7 +86,7 @@ export default function RegisterPage() {
           <h1 className="text-2xl font-bold text-gray-900 mb-2">Registration Successful!</h1>
           <p className="text-gray-500 text-sm mb-6">
             Your unique Voter ID has been generated.{' '}
-            <strong className="text-red-600">Save it — you cannot recover it later.</strong>
+            <strong className="text-red-600">Save it! You cannot recover it later.</strong>
           </p>
           <div className="bg-green-50 border-2 border-dashed border-green-500 rounded-xl p-5 mb-5">
             <p className="text-xs font-bold text-green-600 uppercase tracking-wider mb-2">Your Voter ID</p>
@@ -159,7 +159,7 @@ export default function RegisterPage() {
           <div>
             <label className="form-label">
               National Identification Number (NIN)
-              <span className="text-gray-400 font-normal ml-1 text-xs">— 11 digits</span>
+              <span className="text-gray-400 font-normal ml-1 text-xs italic"> 11 digits</span>
             </label>
             <input
               className="form-input tracking-widest"
@@ -177,7 +177,7 @@ export default function RegisterPage() {
           <div>
             <label className="form-label">
               Date of Birth
-              <span className="text-gray-400 font-normal ml-1 text-xs">— must be 18+</span>
+              <span className="text-gray-400 font-normal ml-1 text-xs italic"> must be 18+</span>
             </label>
             <input
               className="form-input"
@@ -194,8 +194,8 @@ export default function RegisterPage() {
                 calculateAge(form.date_of_birth) >= 18 ? 'text-green-600' : 'text-red-500'
               }`}>
                 {calculateAge(form.date_of_birth) >= 18
-                  ? `✅ Age ${calculateAge(form.date_of_birth)} — Eligible to vote`
-                  : `❌ Age ${calculateAge(form.date_of_birth)} — Must be 18 or older`}
+                  ? `✅ Age ${calculateAge(form.date_of_birth)}, Eligible to vote!`
+                  : `❌ Age ${calculateAge(form.date_of_birth)}, Must be 18 or older!`}
               </p>
             )}
           </div>

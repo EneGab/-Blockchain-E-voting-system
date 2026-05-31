@@ -39,7 +39,7 @@ export default function AdminLoginPage() {
           <span className="font-bold text-xl text-gray-900">Admin Portal</span>
         </div>
         <h1 className="text-2xl font-bold text-gray-900 text-center mb-1">Secure Admin Login</h1>
-        <p className="text-gray-400 text-sm text-center mb-8">Restricted — authorised personnel only</p>
+        <p className="text-gray-400 text-sm text-center mb-8"><strong>Restricted. Authorised personnel only!</strong></p>
 
         {error && <div className="alert-error mb-5">⚠️ {error}</div>}
 

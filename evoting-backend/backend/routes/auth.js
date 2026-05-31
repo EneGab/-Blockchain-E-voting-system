@@ -4,6 +4,7 @@ const jwt      = require('jsonwebtoken');
 const crypto   = require('crypto');
 const { v4: uuidv4 } = require('uuid');
 const { db }   = require('../db/database');
+const { sendPasswordResetEmail } = require('../utils/email');
 
 const router = express.Router();
 
@@ -156,11 +157,15 @@ router.post('/forgot-password', async (req, res) => {
 
     const resetUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/reset-password?token=${token}`;
 
-    // In production this would send an email
-    // For now the link is logged to the backend terminal
-    console.log(`\n📧 Password reset link for ${email}:\n${resetUrl}\n`);
+// Send the reset link via email
+      try {
+        await sendPasswordResetEmail(voter.email, resetUrl);
+      } catch (mailErr) {
+        console.error('Failed to send reset email:', mailErr);
+        return res.status(500).json({ message: 'Failed to send reset email. Please try again.' });
+      }
 
-    return res.json({ message: 'If this email is registered, a reset link has been sent.', resetUrl });
+      return res.json({ message: 'If this email is registered, a reset link has been sent.' });
   } catch (err) {
     console.error('Forgot password error:', err);
     return res.status(500).json({ message: 'Failed to process request.' });

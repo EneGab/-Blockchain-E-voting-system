@@ -21,6 +21,7 @@ export default function AdminDashboard() {
   const [showForm, setShowForm] = useState(false);
   const [editId,   setEditId]   = useState(null);
   const [cForm,    setCForm]    = useState({ name: '', party: '', position: '', bio: '', photo: '' });
+  const [photoFile, setPhotoFile] = useState(null);
   const [saving,   setSaving]   = useState(false);
   const [deleteId, setDeleteId] = useState(null);
 
@@ -62,24 +63,35 @@ export default function AdminDashboard() {
   function openAdd() {
     setEditId(null);
     setCForm({ name: '', party: '', position: '', bio: '', photo: '' });
+    setPhotoFile(null);
     setShowForm(true);
   }
 
   function openEdit(c) {
     setEditId(c.id);
     setCForm({ name: c.name, party: c.party || '', position: c.position || '', bio: c.bio || '', photo: c.photo || '' });
+    setPhotoFile(null);
     setShowForm(true);
   }
 
   async function saveCandidate() {
     if (!cForm.name) return showToast('Candidate name is required.', 'error');
     setSaving(true);
+
+    // Build FormData so we can send the image file along with the text fields
+    const formData = new FormData();
+    formData.append('name', cForm.name);
+    formData.append('party', cForm.party);
+    formData.append('position', cForm.position);
+    formData.append('bio', cForm.bio);
+    if (photoFile) formData.append('photo', photoFile);
+
     try {
       if (editId) {
-        await axios.put(`${API}/api/admin/candidates/${editId}`, cForm, { headers: authHeaders() });
+        await axios.put(`${API}/api/admin/candidates/${editId}`, formData, { headers: authHeaders() });
         showToast('Candidate updated successfully.');
       } else {
-        await axios.post(`${API}/api/admin/candidates`, cForm, { headers: authHeaders() });
+        await axios.post(`${API}/api/admin/candidates`, formData, { headers: authHeaders() });
         showToast('Candidate added successfully.');
       }
       setShowForm(false);
@@ -230,7 +242,7 @@ export default function AdminDashboard() {
               {candidates.map(c => (
                 <div key={c.id} className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5">
                   {c.photo ? (
-                    <img src={c.photo} alt={c.name}
+                    <img src={`${API}${c.photo}`} alt={c.name}
                       className="w-14 h-14 rounded-full object-cover mx-auto mb-3 border-2 border-green-200" />
                   ) : (
                     <div className="w-14 h-14 rounded-full bg-green-100 text-green-700 text-xl font-bold flex items-center justify-center mx-auto mb-3">
@@ -391,9 +403,12 @@ export default function AdminDashboard() {
                   value={cForm.position} onChange={e => setCForm({ ...cForm, position: e.target.value })} />
               </div>
               <div>
-                <label className="form-label">Photo URL</label>
-                <input className="form-input" placeholder="https://example.com/photo.jpg"
-                  value={cForm.photo} onChange={e => setCForm({ ...cForm, photo: e.target.value })} />
+                <label className="form-label">Candidate Photo</label>
+                <input type="file" accept="image/*" className="form-input"
+                  onChange={e => setPhotoFile(e.target.files[0])} />
+                {editId && cForm.photo && !photoFile && (
+                  <p className="text-xs text-gray-400 mt-1">Current photo will be kept unless you choose a new one.</p>
+                )}
               </div>
               <div>
                 <label className="form-label">Bio / Description</label>
