@@ -16,3 +16,7 @@ evoting-backend/backend/.env
 
 # Misc
 .DS_Store
+
+# Uploaded candidate images (keep folder, ignore contents)
+evoting-backend/backend/uploads/*
+!evoting-backend/backend/uploads/.gitkeep
